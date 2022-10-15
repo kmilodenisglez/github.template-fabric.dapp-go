@@ -4,7 +4,7 @@ DApp to communicate with Hyperledger Fabric Blockchain Network
 
 > **NOTE**: This DApp has been tested on **Ubuntu 18.04** and on **Windows 10 with WSL** and Golang 1.18 was used.
 
-Read ![this doc](/README.DEV.md) to get the DApp up in dev mode.
+👉🏾 Read ![this doc](/README.DEV.md) to to start DApp in dev mode.
 
 ## Table of Contents
 
