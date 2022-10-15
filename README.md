@@ -85,7 +85,7 @@ If you have 🐧Linux or 🍎Dash, run:
 export SERVER_CONFIG=$PWD/conf/conf.yaml
 ```
 
-but if it is in the windows cmd, then run:
+but if it's the windows cmd, run:
 
 ```bash
 set SERVER_CONFIG=%cd%/conf/conf.yaml

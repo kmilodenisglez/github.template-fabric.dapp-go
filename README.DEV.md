@@ -58,11 +58,25 @@ If you have 🐧Linux or 🍎Dash, run:
 source ./setenv.sh
 ```
 
-but if it is in the windows cmd, then run:
+but if it's the windows cmd, run:
 
 ```bash
 source ./setenv.cmd
 ```
+
+#### Configure the dapp
+
+Dapp config file:
+```bash
+cp conf/conf.sample.unix.yaml conf/conf.yaml
+```
+
+Network profile:
+```bash
+cp conf/cpp.sample.unix.yaml conf/cpp.yaml
+```
+
+Modify the crypto-config paths in __conf/cpp.yaml__ file, in our case it is `/home/user/fabric-folder/fabric-testnet-nano-without-syschannel` 
 
 #### 🏃🏽‍♂️ Start the server
 
