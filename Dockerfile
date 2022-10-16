@@ -1,5 +1,5 @@
 # docker build --no-cache --force-rm --tag app_restapi .
-FROM golang:1.16-alpine AS builder
+FROM golang:1.18-alpine AS builder
 
 RUN apk add --no-cache git
 
@@ -16,12 +16,12 @@ WORKDIR /tmp/restapi-app-folder
 # Expecting to copy go.mod and if present go.sum.
 COPY go.* ./
 RUN go mod download
-RUN go install github.com/swaggo/swag/cmd/swag@v1.7.0
+RUN go install github.com/swaggo/swag/cmd/swag@v1.8.6
 
 # Copy local code to the container image.
 COPY . .
 
-RUN swag init --parseDependency --parseInternal --parseDepth 1 --md docs/md_endpoints
+RUN swag init --md docs/md_endpoints
 RUN go mod vendor
 
 # testing
