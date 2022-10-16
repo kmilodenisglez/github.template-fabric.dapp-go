@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"dapp/lib"
 	"dapp/repo"
 	"dapp/schema"
 	"dapp/schema/dto"
@@ -12,7 +13,6 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"github.com/kataras/iris/v12/hero"
-	"github.com/kataras/iris/v12/middleware/jwt"
 )
 
 // DappHandler  endpoint handler struct for Dapp
@@ -51,7 +51,7 @@ func NewDappHandler(app *iris.Application, mdwAuthChecker *context.Handler, svcR
 			protectedAPI.Post("/query", hero.Handler(h.postQuery))
 			protectedAPI.Post("/transaction", hero.Handler(h.postTransaction))
 			// --- DEPENDENCIES ---
-			hero.Register(DepObtainUserDid)
+			hero.Register(lib.DepObtainUserDid)
 		}
 	}
 	return h
@@ -135,14 +135,5 @@ func (h DappHandler) postTransaction(ctx iris.Context, params dto.InjectedParam)
 }
 
 // region ======== LOCAL DEPENDENCIES ====================================================
-
-// DepObtainUserDid this tries to get the user DID store in the previously generated auth Bearer token.
-func DepObtainUserDid(ctx iris.Context) dto.InjectedParam {
-	//tkData := ctx.Values().Get("iris.jwt.claims").(*dto.AccessTokenData)
-	tkData := jwt.Get(ctx).(*dto.AccessTokenData)
-
-	// returning the DID and Identifier (Username)
-	return tkData.Claims
-}
 
 // endregion =============================================================================

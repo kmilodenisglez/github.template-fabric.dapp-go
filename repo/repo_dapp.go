@@ -32,7 +32,6 @@ type ccpClientWrapper struct {
 }
 
 type RepoDapp struct {
-	ChannelName       string          // ChannelName HLF channel name
 	CppPath           string          // CppPath path to the connection profile
 	WalletPath        string          // WalletPath path to the wallets folders
 	Wallet            *gateway.Wallet // Wallet with admin privilege identity for admins ops on the network
@@ -62,16 +61,15 @@ func NewRepoDapp(svcConf *utils.SvcConfig) *RepoDapp {
 		if err != nil || !exist {
 			panic(fmt.Errorf("fabric network profile config not found"))
 		}
+		exist, err = lib.FileExists(svcConf.WalletFolder)
+		if err != nil || !exist {
+			panic(fmt.Errorf("wallet folder not found, check in the dapp configuration the parameter \"WalletFolder\""))
+		}
 
 		configProvider := config.FromFile(filepath.Clean(svcConf.CppPath))
 		sdk, err := fabsdk.New(configProvider)
 		if err != nil {
 			panic(schema.ErrDetSDKInit + " ." + err.Error())
-		}
-
-		exist, err = lib.FileExists(svcConf.WalletFolder)
-		if err != nil || !exist {
-			panic(fmt.Errorf("wallet folder not found, check in the dapp configuration the parameter \"WalletFolder\""))
 		}
 
 		singleton = &RepoDapp{
@@ -244,7 +242,6 @@ func (r *RepoDapp) Invoke(query dto.Transaction, did string) ([]byte, error) {
 	}
 
 	return result.Payload, nil
-
 }
 
 type channelCreator func(context.ChannelProvider) (*channel.Client, error)

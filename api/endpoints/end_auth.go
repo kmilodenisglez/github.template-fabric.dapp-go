@@ -66,7 +66,7 @@ func NewAuthHandler(app *iris.Application, mdwAuthChecker *context.Handler, svcR
 			guardAuthRouter.Use(*mdwAuthChecker) // registering access token checker middleware
 
 			// --- DEPENDENCIES ---
-			hero.Register(DepObtainUserDid)
+			hero.Register(lib.DepObtainUserDid)
 			hero.Register(svcUser)
 
 			// --- REGISTERING ENDPOINTS ---
