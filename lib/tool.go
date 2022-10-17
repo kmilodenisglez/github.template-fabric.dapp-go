@@ -20,7 +20,6 @@ import (
 
 // DepObtainUserDid this tries to get the user DID store in the previously generated auth Bearer token.
 func DepObtainUserDid(ctx iris.Context) dto.InjectedParam {
-	//tkData := ctx.Values().Get("iris.jwt.claims").(*dto.AccessTokenData)
 	tkData := jwt.Get(ctx).(*dto.AccessTokenData)
 
 	// returning the DID and Identifier (Username)
