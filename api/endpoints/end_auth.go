@@ -9,6 +9,7 @@ import (
 	"dapp/service"
 	"dapp/service/auth"
 	"dapp/service/utils"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
@@ -78,12 +79,14 @@ func NewAuthHandler(app *iris.Application, mdwAuthChecker *context.Handler, svcR
 		guardUserManagerRouter := v1.Party("/users")
 		{
 			guardUserManagerRouter.Get("", hero.Handler(h.getUsers))
+			guardUserManagerRouter.Post("", hero.Handler(h.postUser))
 			guardUserManagerRouter.Get("/{id:string}", hero.Handler(h.getUserById))
 			guardUserManagerRouter.Put("/{id:string}", hero.Handler(h.putUserById))
+			guardUserManagerRouter.Delete("/{id:string}", hero.Handler(h.deleteUserById))
 
-			// TODO: missing to finish (Create and Delete)
-			// POST: /users | createUser()
-			// DELETE: /users/:id | deleteUser()
+
+
+
 
 			// --- DEPENDENCIES ---
 			hero.Register(repoUser)
@@ -143,7 +146,8 @@ func (h HAuth) authIntent(ctx iris.Context, uCred *dto.UserCredIn, svcAuth *auth
 // @Security ApiKeyAuth
 // @Produce  json
 // @Param Authorization header string true "Insert access token" default(Bearer <Add access token here>)
-// @Success 204 "OK"
+
+// @Success 204 "Everything went fine, nothing to return"
 // @Failure 401 {object} dto.Problem "err.unauthorized"
 // @Failure 500 {object} dto.Problem "err.generic
 // @Router /auth/logout [get]
@@ -199,12 +203,14 @@ func (h HAuth) getUsers(ctx iris.Context, service service.ISvcUser) {
 
 // getUserById Get user by ID
 // @Summary Get user by ID
+// @Description Returns information about an account by ID
 // @Tags Users
 // @Security ApiKeyAuth
 // @Produce  json
 // @Param Authorization header string  true "Insert access token" default(Bearer <Add access token here>)
 // @Param   id          path   string  true "The unique identifier for the user within the account"     Format(string)
 // @Success 200 {object} dto.UserResponse "OK"
+// @Failure 400 {object} dto.Problem "err.processing_param"
 // @Failure 401 {object} dto.Problem "err.unauthorized"
 // @Failure 500 {object} dto.Problem "err.generic
 // @Router /users/{id} [get]
@@ -232,6 +238,7 @@ func (h HAuth) getUserById(ctx iris.Context, service service.ISvcUser) {
 // @Param   id          path   string  true "The unique identifier for the user within the account"     Format(string)
 // @Param 	Transaction	body   dto.UserUpdateRequest	true	"User Data"
 // @Success 200 {object} dto.UserResponse "OK"
+// @Failure 400 {object} dto.Problem "err.processing_param"
 // @Failure 401 {object} dto.Problem "err.unauthorized"
 // @Failure 500 {object} dto.Problem "err.generic
 // @Router /users/{id} [put]
@@ -258,6 +265,61 @@ func (h HAuth) putUserById(ctx iris.Context, service service.ISvcUser) {
 		return
 	}
 	h.response.ResOKWithData(response, &ctx)
+}
+
+// postUser Create user.
+// @Tags Users
+// @Security ApiKeyAuth
+// @Produce  json
+// @Param Authorization header string    true  "Insert access token" default(Bearer <Add access token here>)
+// @Param 	Transaction	body   dto.User	 true  "User Data"
+// @Success 204 "Everything went fine, nothing to return."
+// @Failure 400 {object} dto.Problem "err.processing_param"
+// @Failure 401 {object} dto.Problem "err.unauthorized"
+// @Failure 500 {object} dto.Problem "err.generic
+// @Router /users [post]
+func (h HAuth) postUser(ctx iris.Context, service service.ISvcUser) {
+	// getting data from client
+	var requestData dto.User
+
+	// unmarshalling the json and check
+	if err := ctx.ReadJSON(&requestData); err != nil {
+		(*h.response).ResErr(&dto.Problem{Status: iris.StatusBadRequest, Title: schema.ErrProcParam, Detail: err.Error()}, &ctx)
+		return
+	}
+
+	_, problem := service.PostUserSvc(requestData)
+	if problem != nil {
+		(*h.response).ResErr(problem, &ctx)
+		return
+	}
+	h.response.ResOK(&ctx)
+}
+
+// deleteUser Delete user.
+// @Tags Users
+// @Security ApiKeyAuth
+// @Produce  json
+// @Param Authorization header string    true  "Insert access token" default(Bearer <Add access token here>)
+// @Param   id          path   string    true  "The unique identifier for the user within the account"     Format(string)
+// @Success 204 "OK"
+// @Failure 401 {object} dto.Problem "err.unauthorized"
+// @Failure 500 {object} dto.Problem "err.generic
+// @Router /users/{id} [delete]
+func (h HAuth) deleteUserById(ctx iris.Context, service service.ISvcUser) {
+	// checking param
+	userID := ctx.Params().GetString("id")
+	if userID == "" {
+		h.response.ResErr(&dto.Problem{Status: iris.StatusInternalServerError, Title: schema.ErrProcParam, Detail: schema.ErrDetInvalidField}, &ctx)
+		return
+	}
+
+	_, problem := service.DeleteUserSvc(userID)
+	if problem != nil {
+		(*h.response).ResErr(problem, &ctx)
+		return
+	}
+	h.response.ResOK(&ctx)
 }
 
 // endregion =============================================================================
