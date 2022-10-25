@@ -9,7 +9,6 @@ import (
 	"dapp/service"
 	"dapp/service/auth"
 	"dapp/service/utils"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
@@ -48,6 +47,8 @@ func NewAuthHandler(app *iris.Application, mdwAuthChecker *context.Handler, svcR
 	hero.Register(svcAuth) // as an alternative, we can put these dependencies as property in the struct HAuth, as we are doing in the rest of the endpoints / handlers
 	hero.Register(svcUser)
 	hero.Register(repoUser)
+
+	app.Get("/status", h.statusServer)
 
 	// Simple group: v1
 	v1 := app.Party("/api/v1")
@@ -106,13 +107,6 @@ func (h HAuth) authIntent(ctx iris.Context, uCred *dto.UserCredIn, svcAuth *auth
 	// using a provider named 'dapp_provider', also injecting dependencies
 	provider := "dapp_provider"
 
-	// ej: Aqui podemos comprobar si la bd esta poblada
-	//populate := r.IsPopulateDBSvc()
-	//if !populate {
-	//	h.response.ResErr(&dto.Problem{Status: iris.StatusInternalServerError, Title: schema.ErrBuntdbNotPopulated, Detail: "The database has not been populated yet"}, &ctx)
-	//	return
-	//}
-
 	authGrantedData, problem := svcAuth.AuthProviders[provider].GrantIntent(uCred, nil) // requesting authorization to evote (provider) mechanisms in this case
 	if problem != nil {                                                                 // check for errors
 		h.response.ResErr(problem, &ctx)
@@ -127,7 +121,6 @@ func (h HAuth) authIntent(ctx iris.Context, uCred *dto.UserCredIn, svcAuth *auth
 		h.response.ResErr(&dto.Problem{Status: iris.StatusInternalServerError, Title: schema.ErrJwtGen, Detail: err.Error()}, &ctx)
 		return
 	}
-
 	h.response.ResOKWithData(string(accessToken), &ctx)
 }
 
@@ -329,6 +322,10 @@ func depObtainUserCred(ctx iris.Context) dto.UserCredIn {
 
 	// TIP: We can do some validation here if we want
 	return cred
+}
+
+func (h HAuth) statusServer(ctx iris.Context) {
+	h.response.ResOKWithData(dto.StatusMsg{OK: true}, &ctx)
 }
 
 // endregion =============================================================================

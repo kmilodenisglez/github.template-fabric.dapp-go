@@ -7,7 +7,6 @@ import (
 	"dapp/schema/dto"
 	"dapp/service"
 	"dapp/service/utils"
-	"fmt"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/kataras/iris/v12"
@@ -37,7 +36,6 @@ func NewDappHandler(app *iris.Application, mdwAuthChecker *context.Handler, svcR
 	svc := service.NewSvcDappReqs(repoDapp)
 	// registering protected / guarded router
 	h := DappHandler{svcR, &svc, validate, uT}
-	app.Get("/status", h.StatusServer)
 
 	// Simple group: v1
 	v1 := app.Party("/api/v1")
@@ -55,10 +53,6 @@ func NewDappHandler(app *iris.Application, mdwAuthChecker *context.Handler, svcR
 		}
 	}
 	return h
-}
-
-func (h DappHandler) StatusServer(ctx iris.Context) {
-	h.response.ResOKWithData(dto.StatusMsg{OK: true}, &ctx)
 }
 
 // endregion ======== Dapp ======================================================
@@ -116,20 +110,17 @@ func (h DappHandler) postTransaction(ctx iris.Context, params dto.InjectedParam)
 	// getting data from client
 	var requestData dto.Transaction
 
-	fmt.Println("2")
 	// unmarshalling the json and check
 	if err := ctx.ReadJSON(&requestData); err != nil {
 		(*h.response).ResErr(&dto.Problem{Status: iris.StatusBadRequest, Title: schema.ErrProcParam, Detail: err.Error()}, &ctx)
 		return
 	}
-	fmt.Println("3")
 	// trying to submit the transaction
 	bcRes, problem := (*h.service).Invoke(requestData, params.Username)
 	if problem != nil {
 		(*h.response).ResErr(problem, &ctx)
 		return
 	}
-	fmt.Println("4")
 
 	(*h.response).ResOKWithData(bcRes, &ctx)
 }
